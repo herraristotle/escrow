@@ -1,3 +1,4 @@
+'''
 from config import *
 from utils import *
 from functions import *
@@ -45,7 +46,7 @@ def join_trade(msg):
             trade["buyer_id"],
             Messages.trade_joined(trade, status),
             parse_mode="html",
-            reply_markup=confirm(payment_url) if status is not "Expired" else None,
+            reply_markup=confirm(payment_url) if status != "Expired" else None,
         )
 
         ##SEND ALERT TO SELLER#########
@@ -82,3 +83,5 @@ def join_trade(msg):
                 f"⚠️ Trade not found! - {trade}",
             ),
         )
+
+'''

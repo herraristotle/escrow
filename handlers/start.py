@@ -10,17 +10,17 @@ def start(msg):
     """
     bot.send_chat_action(msg.from_user.id, "typing")
     user: UserType = UserClient.get_user(msg)
-    keyboard = main_menu(msg)
+    keyboard = trade_menu()
 
     bot.send_photo(
         user["_id"],
-        photo="https://ibb.co/DLQ8yys",
+        photo="https://ibb.co/fDDQ09k",
         caption=Messages.welcome(msg.from_user.first_name),
         reply_markup=keyboard,
         parse_mode="html",
     )
 
-
+'''
 def start_trade_menu(msg):
     """
     This is the handler to start trade seller or buyer options
@@ -34,3 +34,4 @@ def start_trade_menu(msg):
         reply_markup=keyboard,
         parse_mode="html",
     )
+'''

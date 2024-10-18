@@ -1,6 +1,6 @@
 from config import *
 
-
+'''
 def main_menu(msg):
     "Return Main Menu Keyboard"
 
@@ -20,33 +20,20 @@ def main_menu(msg):
         keyboard.add(c, b)
 
     return keyboard
-
-
-def group_menu():
-    "Return Join Or Sell"
-
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    a = types.InlineKeyboardButton(
-        text=emoji.emojize(
-            "Join A Trade :man:",
-        ),
-        url="https://t.me/trusted_escrow_bot?message=start",
-    )
-    keyboard.add(a)
-    return keyboard
-
+'''
 
 def trade_menu():
-    "Return Join Or Sell"
-    keyboard = types.ReplyKeyboardMarkup(row_width=2)
-    a = types.KeyboardButton("Open New Trade 📒")
-    b = types.KeyboardButton("Join A Trade 📝")
-    c = types.KeyboardButton("Trade History 📚")
-    d = types.KeyboardButton("Rules 📜")
-    e = types.KeyboardButton("Community 🌐")
-    f = types.KeyboardButton("FAQs ❓")
+    "Return Main Menu Keyboard"
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    a = types.KeyboardButton("🤝 Start Escrow")
+    b = types.KeyboardButton("📚 Terms & Rules")
+    c = types.KeyboardButton("💰 Referral")
+    d = types.KeyboardButton("📜 History")
+    e = types.KeyboardButton("❓ Help")
 
-    keyboard.add(a, b, c, d, e, f)
+    keyboard.row(a)
+    keyboard.row(b, c)
+    keyboard.row(d, e)
     return keyboard
 
 
@@ -264,3 +251,29 @@ def review_menu():
         text="Write Complaint 🚫", callback_data="write_complaint"
     )
     review_keyboard = types.InlineKeyboardMarkup(row_width=1).add(a, b)
+
+
+def terms_and_conditions_menu():
+    "Return Terms & Conditions Acceptance Keyboard"
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    a = types.InlineKeyboardButton(text="Accept ✅", callback_data="accept_terms")
+    b = types.InlineKeyboardButton(text="Decline ❌", callback_data="decline_terms")
+    keyboard.add(a, b)
+    return keyboard
+
+def buyer_seller_menu():
+    "Return Buyer or Seller Selection Keyboard"
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    a = types.KeyboardButton("I am buyer 💰")
+    b = types.KeyboardButton("I am seller 👨‍💼")
+    c = types.KeyboardButton("⬅️ Back")
+    keyboard.row(a, b)
+    keyboard.row(c)
+    return keyboard
+
+def cancel_keyboard():
+    "Return Cancel Keyboard"
+    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    a = types.KeyboardButton("Cancel ❌")
+    keyboard.add(a)
+    return keyboard

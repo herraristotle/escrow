@@ -13,17 +13,20 @@ class TradeClient:
 
     @staticmethod
     def open_new_trade(
-        msg, currency: str = "USD", chat: str | None = None
+        msg_or_user, currency: str = "USD", chat: str | None = None, role: str | None = None
     ) -> TradeType:
         """
         Returns a new trade without Agent
         """
-        user: UserType = UserClient.get_user(msg)
+        if isinstance(msg_or_user, dict):
+            user = msg_or_user
+        else:
+            user: UserType = UserClient.get_user(msg_or_user)
 
         trade: TradeType = {
             "_id": generate_id(),
-            "seller_id": user["_id"],
-            "buyer_id": "",
+            "seller_id": user["_id"] if role == "seller" else "",
+            "buyer_id": user["_id"] if role == "buyer" else "",
             "currency": currency,
             "is_active": False,
             "is_paid": False,
@@ -35,6 +38,7 @@ class TradeClient:
             "chat": chat,
             "created_at": datetime.now(),
             "updated_at": datetime.now(),
+            "user_role": role,  # Add this line to store the role
         }
 
         db.trades.insert_one(trade)
@@ -43,21 +47,17 @@ class TradeClient:
     @staticmethod
     def get_most_recent_trade(user: UserType) -> TradeType | None:
         "Get the most recent trade created by this user"
-        most_recent_trade = (
-            db.trades.find(
-                {
-                    "$or": [
-                        {"seller_id": str(user["_id"])},
-                        {"buyer_id": str(user["_id"])},
-                    ]
-                }
-            )
-            .sort([("created_at", -1)])
-            .limit(1)
+        most_recent_trade = db.trades.find_one(
+            {
+                "$or": [
+                    {"seller_id": str(user["_id"])},
+                    {"buyer_id": str(user["_id"])},
+                ]
+            },
+            sort=[("created_at", -1)]
         )
 
-        # If there are no trades, return None or handle as needed
-        return most_recent_trade[0] if most_recent_trade else None
+        return most_recent_trade
 
     @staticmethod
     def get_trade(id: str) -> TradeType or None:
@@ -83,10 +83,12 @@ class TradeClient:
         Update terms of contract
         """
         trade = TradeClient.get_most_recent_trade(user)
-        if trade is not None:
-            db.trades.update_one({"_id": trade["_id"]}, {"$set": {"terms": terms}})
-            return trade
-        return None
+        if trade is None:
+            # Create a new trade if one doesn't exist
+            trade = TradeClient.open_new_trade(user, currency="USD")  # Default to USD, can be changed later
+        
+        db.trades.update_one({"_id": trade["_id"]}, {"$set": {"terms": terms}})
+        return TradeClient.get_most_recent_trade(user)  # Return the updated trade
 
     @staticmethod
     def add_invoice_id(trade: TradeType, invoice_id: str):
@@ -120,7 +122,7 @@ class TradeClient:
         "Get Payment Url"
         active_trade: TradeType = db.trades.find_one({"_id": trade["_id"]})
         
-        if active_trade['invoice_id'] is "":
+        if active_trade['invoice_id'] == "":  # Changed 'is' to '=='
             url, invoice_id = client.create_invoice(active_trade)
             if url is not None:
                 TradeClient.add_invoice_id(trade, str(invoice_id))
@@ -229,3 +231,38 @@ class TradeClient:
             )
             return True
         return False
+
+    @staticmethod
+    def update_currency(trade_id: str, currency: str):
+        """
+        Update the currency of a trade
+        """
+        db.trades.update_one({"_id": trade_id}, {"$set": {"currency": currency}})
+
+    @staticmethod
+    def update_wallet(trade_id: str, wallet_address: str):
+        """
+        Update the wallet address of a trade
+        """
+        db.trades.update_one({"_id": trade_id}, {"$set": {"wallet_address": wallet_address}})
+
+    @staticmethod
+    def update_user_role(user_id: str, role: str):
+        """
+        Update the user's role for the most recent trade
+        """
+        trade = TradeClient.get_most_recent_trade({"_id": user_id})
+        if trade:
+            db.trades.update_one(
+                {"_id": trade["_id"]},
+                {"$set": {"user_role": role}}
+            )
+
+    @staticmethod
+    def get_user_role(user_id: str):
+        """
+        Get the user's role for the most recent trade
+        """
+        trade = TradeClient.get_most_recent_trade({"_id": user_id})
+        return trade.get("user_role") if trade else None
+

@@ -20,4 +20,4 @@ COPY . .
 
 EXPOSE 5004
 
-CMD [ "python", "main.py" ]
+CMD [ "python3", "main.py" ]
